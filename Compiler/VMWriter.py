@@ -10,6 +10,8 @@ class VMwriter(object):
         Creates a new file and prepares it for writing VM commands
         :param output_file:
         """
+        self.output_file = output_file #already opened in main
+
 
     def writePush(self, segment, index):
         """
@@ -19,6 +21,8 @@ class VMwriter(object):
         :return:
         """
 
+        self.output_file.write("push "+segment+" "+str(index)+"\n" )
+
     def writePop(self, segment, index):
         """
         Writes a VM pop command
@@ -26,6 +30,7 @@ class VMwriter(object):
         :param index:int
         :return:
         """
+        self.output_file.write("pop "+segment+" "+str(index)+"\n" )
 
     def WriteArithmetic(self, command):
         """
@@ -33,6 +38,7 @@ class VMwriter(object):
         :param command:ADD, SUB, NEG, EQ, GT, LT, AND, OR, NOT
         :return:
         """
+        self.output_file.write(command + "\n")
 
     def WriteLabel(self, label):
         """
@@ -41,14 +47,16 @@ class VMwriter(object):
         :param label: string
         :return:
         """
+        self.output_file.write("label " + label + "\n")
 
 
     def WriteGoto(self, label):
         """
-        Writes a VM label command?????????????????????????
+
         :param label:
         :return:
         """
+        self.output_file.write("goto " + label + "\n")
 
     def WriteIf(self, label):
         """
@@ -56,6 +64,7 @@ class VMwriter(object):
         :param label:
         :return:
         """
+        self.output_file.write("if-goto " + label + "\n")
 
     def writeCall(self, name, n):
         """
@@ -65,6 +74,7 @@ class VMwriter(object):
         :param n: num of args
         :return:
         """
+        self.output_file.write("call " + name + " " + str(n) + "\n")
 
     def writeFunction(self, name, n):
         """
@@ -73,16 +83,19 @@ class VMwriter(object):
         :param n: num of locals
         :return:
         """
+        self.output_file.write("function " + name + " " + str(n) + "\n")
 
     def writeReturn(self):
         """
         Writes a VM return command
         :return:
         """
+        self.output_file.write("return" + "\n")
 
     def close(self):
         """
         Closes the output file
         :return:
         """
+        self.output_file.close()
 
