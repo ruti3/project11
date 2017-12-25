@@ -1,3 +1,6 @@
+from enum import Enum
+from Compiler.JackGrammar import *
+
 # This module provides services for creating, populating, and using a symbol
 # table. Recall that each symbol has a scope from which it is visible
 # in the source code. In the symbol table, each symbol is given a running
@@ -8,6 +11,33 @@
 # table: one for the class-scope and another one for the subroutine-scope. When a new subroutine
 # is started, the subroutine-scope table should be cleared.
 
+
+class Kind(Enum):
+    """
+    enum represent kind of identifier may appear in the symbol table
+    """
+    static = 1
+    field = 2
+    arg = 3
+    var = 4
+
+    def get_seg(self):
+        if self is Kind.var:
+            return K_VAR
+        elif self is Kind.field:
+            return K_FIELD
+        elif self is Kind.arg:
+            return K_ARG
+        elif self is Kind.static:
+            return K_STATIC
+
+
+C_TYPE = 0
+C_KIND = 1
+C_INDEX = 2
+NO_TYPE, NO_KIND, NO_INDEX = -1
+
+
 class SymbolTable(object):
 
     """
@@ -17,16 +47,32 @@ class SymbolTable(object):
     """
     def __init__(self):
         """
-        Creates a new empty symbol table
+        Creates a new empty symbol table contains:
+        -class_table
+        -subroutine_table
+
+        each field in a table looks like:
+
+        name : (type, kind, running_index=counter)
         """
 
+        self.class_table = {}
+        self.subroutine_table = {}
+        self.counter = {Kind.var : 0, Kind.static : 0, Kind.arg : 0,
+                        Kind.field : 0}
 
     def startSubroutine(self):
         """
         Starts a new subroutine scope (i.e. erases
         all names in the previous subroutine’s scope.)
+
+        empty subroutine table and arg and var counters
         :return:
         """
+
+        self.counter[Kind.arg], self.counter[Kind.var] = 0, 0
+        self.subroutine_table = {}
+
 
     def define(self, name, type, kind):
         """
@@ -39,6 +85,13 @@ class SymbolTable(object):
         :param kind:(STATIC,FIELD, ARG, or VAR)
         :return:
         """
+        if kind == Kind.static or kind == Kind.field:
+            self.class_table[name] = (type, kind, self.counter[kind])
+        else:
+            self.subroutine_table[name] = (type, kind, self.counter[kind])
+
+        self.counter[kind] += 1
+
 
     def varCount(self, kind):
         """
@@ -47,6 +100,8 @@ class SymbolTable(object):
         :param kind:STATIC,FIELD, ARG, or VAR
         :return: int
         """
+        return self.counter[kind]
+
 
     def kindOf(self, name):
         """
@@ -55,6 +110,13 @@ class SymbolTable(object):
         :param name:string
         :return:kind:STATIC,FIELD, ARG, or VAR
         """
+        if name in self.subroutine_table:
+            return self.subroutine_table[name][C_KIND]
+        elif name in self.class_table:
+            return self.class_table[name][C_KIND]
+        else:
+            return NO_KIND
+
 
     def typeOf(self, name):
         """
@@ -62,6 +124,13 @@ class SymbolTable(object):
         :param name:string
         :return:string
         """
+        if name in self.subroutine_table:
+            return self.subroutine_table[name][C_TYPE]
+        elif name in self.class_table:
+            return self.class_table[name][C_TYPE]
+        else:
+            return NO_TYPE
+
 
     def indexOf(self, name):
         """
@@ -69,4 +138,11 @@ class SymbolTable(object):
         :param name:string
         :return:int
         """
+        if name in self.subroutine_table:
+            return self.subroutine_table[name][C_INDEX]
+        elif name in self.class_table:
+            return self.class_table[name][C_INDEX]
+        else:
+            return NO_INDEX
+
 

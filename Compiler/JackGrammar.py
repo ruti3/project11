@@ -39,6 +39,8 @@ K_NONE = ''
 K_KEYWORD = 'keyword'
 K_SYMBOL = "symbol"
 K_IDENTIFIER = "identifier"
+K_ARG = "argument" ## not a keyword!!!!! - kind
+
 
 keywords = [K_CLASS ,K_CONSTRUCTOR ,K_FUNCTION ,K_METHOD ,K_FIELD ,K_STATIC
 ,K_VAR ,K_INT ,K_BOOLEAN ,K_CHAR ,K_VOID ,K_LET ,K_DO ,K_IF ,K_ELSE ,K_WHILE
