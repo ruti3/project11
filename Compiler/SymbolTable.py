@@ -61,7 +61,7 @@ class SymbolTable(object):
         self.counter = {Kind.var : 0, Kind.static : 0, Kind.arg : 0,
                         Kind.field : 0}
 
-    def startSubroutine(self):
+    def start_subroutine(self):
         """
         Starts a new subroutine scope (i.e. erases
         all names in the previous subroutine’s scope.)
