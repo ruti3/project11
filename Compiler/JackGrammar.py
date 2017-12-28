@@ -56,7 +56,8 @@ K_KEYWORD = 'keyword'
 K_SYMBOL = "symbol"
 K_IDENTIFIER = "identifier"
 K_ARG = "argument" ## not a keyword!!!!! - kind
-
+POINTER = 'pointer'
+CONST = 'constant'
 
 
 

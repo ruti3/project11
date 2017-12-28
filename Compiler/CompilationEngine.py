@@ -34,8 +34,11 @@ class CompilationEngine(object):
         self.vm = vmwriter.VMwriter()
         self.input = input_file  # already open :)
         self.output = output_file  # already open :)
-        self.class_name = 0 # class name
+        self.class_name = "" # current class name
+        self.current_subroutine_type = 0
+        self.current_subroutine_name = ""
         self.type_list = [grammar.K_INT, grammar.K_CHAR, grammar.K_BOOLEAN] #TODO: do we need??
+        self.label_counter = 0
         self.tokenizer.advance()
 
         self.compile_class()
@@ -254,7 +257,7 @@ class CompilationEngine(object):
         :return:
         """
         if self.is_subroutine():
-            current_subroutine = self.tokenizer.current_value
+            self.current_subroutine_type = self.tokenizer.current_value
         else:
             if raise_error:
                 raise ValueError("No keyword found in subroutine")
@@ -274,7 +277,7 @@ class CompilationEngine(object):
         # subroutine name
         self.tokenizer.advance()
         if self.tokenizer.current_token_type == grammar.IDENTIFIER:
-            subroutine_name = self.tokenizer.current_value
+            self.current_subroutine_name = self.tokenizer.current_value
         else:
             if raise_error:
                 raise ValueError("No keyword found in subroutine")
@@ -283,7 +286,7 @@ class CompilationEngine(object):
         #open symbol table
 
         self.symbol_table.start_subroutine()
-        if current_subroutine == grammar.K_METHOD:
+        if self.current_subroutine_type == grammar.K_METHOD:
             self.symbol_table.define('this', self.class_name, grammar.K_ARG)
 
         # (
@@ -310,6 +313,8 @@ class CompilationEngine(object):
 
     def compile_subroutineBody(self):
         """
+        HADAR
+
         compiles subroutines body
         :return:
         """
@@ -319,7 +324,6 @@ class CompilationEngine(object):
         # varDecs*
         self.tokenizer.advance()
         more_vars = True
-
         while (more_vars):
             if self.compile_subroutine_var_dec(False) is False:
                 break
@@ -327,6 +331,9 @@ class CompilationEngine(object):
 
             if self.tokenizer.current_value != "var":
                 more_vars = False
+
+        # write function to vm file
+        self.write_to_vm_function_dec()
 
         # statements
         self.compile_statements()
@@ -336,23 +343,96 @@ class CompilationEngine(object):
 
 
 
+    def get_vm_function_name(self):
+        """
+        HADAR
+        A Jack subroutine xxx() in a Jack class Yyy is compiled into a VM
+        function called Yyy.xxx.
+
+        :return: vm function name
+        """
+        return self.class_name+'.'+self.current_subroutine_name
+
+
+
+    def write_to_vm_function_dec(self):
+        """
+        HADAR
+
+        writes "function function_name num_of_vars"
+        for example : "function BankAccount.commission 0 "
+
+        loads this pointer according to subroutine type
+
+        :return:
+        """
+        self.vm.writeFunction(self.get_vm_function_name(),
+                              self.symbol_table.varCount(grammar.K_VAR))
+
+        if self.current_subroutine_type == grammar.K_METHOD:
+            self.vm.writePush(grammar.K_ARG, 0) # push argument 0
+            self.vm.writePop(grammar.POINTER, 0) # pop pointer 0
+        elif self.current_subroutine_type == grammar.K_CONSTRUCTOR:
+            # push size of object
+            self.vm.writePush(grammar.CONST, self.symbol_table.varCount(grammar.field))
+            # call Memory.alloc 1
+            self.vm.writeCall('Memory.alloc', 1)
+            # pop pointer 0
+            self.vm.writePop(grammar.POINTER, 0)
 
 
 
     def compile_statements(self):
         """
+        HADAR
 
+        Compiles a sequence of statements, not
+        including the enclosing {}.
         :return:
         """
+        more_statements = True
+        # (statement)*
+        while (more_statements):
+            # TODO :ask ruthi about there lines
+            if self.tokenizer.current_value == "/":
+                self.tokenizer.advance()
+                self.output.write(self.tokenizer.get_next()[0])
+
+            if self.tokenizer.current_value == "if":
+                self.compile_if()
+                self.tokenizer.advance()
+
+            elif self.tokenizer.current_value == "let":
+                self.compile_let()
+                self.tokenizer.advance()
+
+            elif self.tokenizer.current_value == "while":
+                self.compile_while()
+                self.tokenizer.advance()
+
+            elif self.tokenizer.current_value == "do":
+                self.compile_do()
+                self.tokenizer.advance()
+
+            elif self.tokenizer.current_value == "return":
+                self.compile_return()
+                self.tokenizer.advance()
+            else:
+                more_statements = False
 
 
 
 
-
-
-
+    def get_new_label(self):
+        """
+        HADAR
+        :return: 'Ln' n=counter
+        """
+        self.label_counter += 1
+        return 'L'+str(self.label_counter)
 
     def current_is_void_or_type(self):
+
         """
         HADAR
 
@@ -404,19 +484,6 @@ class CompilationEngine(object):
         return True
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     def compile_var_dec(self, raise_error=True):
         """
         Compiles a var declaration.
@@ -432,16 +499,12 @@ class CompilationEngine(object):
 
 
 
-
-
     def compile_statements(self):
         """
         Compiles a sequence of statements, not
         including the enclosing {}.
         :return:
         """
-
-
 
     def checkSymbol(self, symbol, raise_error=True):
         """ Check if the symbol is in the current value"""
@@ -450,19 +513,5 @@ class CompilationEngine(object):
         else:
             if raise_error:
                 raise ValueError("No symbol " + symbol + " found")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
