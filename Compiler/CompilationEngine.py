@@ -37,7 +37,7 @@ class CompilationEngine(object):
         self.class_name = "" # current class name
         self.current_subroutine_type = 0
         self.current_subroutine_name = ""
-        self.type_list = [grammar.K_INT, grammar.K_CHAR, grammar.K_BOOLEAN] #TODO: do we need??
+        self.type_list = [grammar.K_INT, grammar.K_CHAR, grammar.K_BOOLEAN]
         self.label_counter = 0
         self.tokenizer.advance()
 
