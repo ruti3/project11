@@ -11,15 +11,13 @@ from Compiler.JackGrammar import *
 # table: one for the class-scope and another one for the subroutine-scope. When a new subroutine
 # is started, the subroutine-scope table should be cleared.
 
+import Compiler.JackGrammar
+
 
 class Kind(Enum):
     """
     enum represent kind of identifier may appear in the symbol table
     """
-    static = 1
-    field = 2
-    arg = 3
-    var = 4
 
     def get_seg(self):
         if self is Kind.var:

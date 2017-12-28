@@ -1,6 +1,22 @@
 import re
+
+
+static = 1
+field = 2
+arg = 3
+var = 4
+
+
+keyword_2_kind = {'static': static, 'field' : field, 'arg' : arg, 'var' : var}
+
+
 # The Jack language includes five types of terminal elements (tokens):
 # KEYWORD, SYMBOL, IDENTIFIER,INT_CONST,STRING_CONS
+
+
+
+
+
 
 
 TRUE = 1
@@ -42,6 +58,10 @@ K_IDENTIFIER = "identifier"
 K_ARG = "argument" ## not a keyword!!!!! - kind
 
 
+
+
+
+
 keywords = [K_CLASS ,K_CONSTRUCTOR ,K_FUNCTION ,K_METHOD ,K_FIELD ,K_STATIC
 ,K_VAR ,K_INT ,K_BOOLEAN ,K_CHAR ,K_VOID ,K_LET ,K_DO ,K_IF ,K_ELSE ,K_WHILE
 ,K_RETURN , K_TRUE ,K_FALSE ,K_NULL ,K_THIS ,K_NONE ]
@@ -68,7 +88,7 @@ tokens_types = ['keyword', 'symbol', 'identifier', 'integerConstant', 'stringCon
 
 RE_INT = r'\d+'
 RE_STR = r'"[\w\W]*"'
-RE_ID = r'[a-zA-Z]+[\w]*'
+RE_ID = r'[a-zA-Z_]+[\w]*'
 RE_NEWLINE = r'/\n'
 RE_WHITESPACES = r'\s' #two or more!
 RE_COMMENT1 = r'//.*[\r\n]+'

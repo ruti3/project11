@@ -69,8 +69,12 @@ class JackTokenizer(object):
             current_token = self.tokens_to_process.pop(0)
             self.current_value, self.current_token_type =\
                 self.phrase_to_token(current_token)
+
         else:
             self.current_value, self.current_token_type = NO_TOKEN, NO_PHRASE
+
+        print(self.current_value, self.current_token_type)
+
 
 
     def token_type(self):
@@ -127,13 +131,12 @@ class JackTokenizer(object):
         """
         return self.current_value
 
-    def find_strings(self):
+    def find_strings(self,code):
         """
 
         :return:
         """
         # find strings
-        code = self.code
         i = 0
         start = 0
         end = code.find("\"")
@@ -152,6 +155,18 @@ class JackTokenizer(object):
         tokenized_lines += [code[(start):]]
 
         return tokenized_lines
+
+    def split_lines(self, tokenized_lines):
+        i = 0
+        while i < len(tokenized_lines):
+            if QUOTATION_MARK in tokenized_lines[i]:  # case token is a string
+                tokenized_lines[i] = [tokenized_lines[i].strip()]
+            else:
+                tokenized_lines[i] = tokenized_lines[i].strip()
+                tokenized_lines[i] = tokenized_lines[i].split('\n')
+            i += 1
+        return tokenized_lines
+
 
     def handle_symbols(self,tokenized_lines):
         """
@@ -195,38 +210,25 @@ class JackTokenizer(object):
         :param file:
         :return: tokenized_lines
         """
-        self.remove_comments()
-        tokenized_lines = self.find_strings()
+
+        tokenized_lines = self.remove_comments(self.code)
+        tokenized_lines = self.find_strings(tokenized_lines)
+        tokenized_lines = self.split_lines(tokenized_lines)
+        tokenized_lines = [item for sublist in tokenized_lines for
+                           item in sublist]
         tokenized_lines = self.handle_symbols(tokenized_lines)
         tokenized_lines = self.split_tokens(tokenized_lines)
         tokenized_lines = [item for sublist in tokenized_lines for
                            item in sublist]
         tokenized_lines = [string for string in tokenized_lines
                            if len(string) > 0] #remove empty strings
-
         return tokenized_lines
 
+    COMMENT_RE = re.compile(r'//[^\n]*\n|/\*(.*?)\*/', re.MULTILINE | re.DOTALL) #TODO : add to grammar
 
-    def remove_comments (self):
-        """
+    def remove_comments(self, line):
+        return self.COMMENT_RE.sub('', line)
 
-        :return:
-        """
-        remove = True
-        while (remove):
-            # newline_re = RE_NEWLINE_COMPILED.match(self.code)
-            comment1_re = RE_COMMENT1_COMPILED.match(self.code)
-            comment2_re = RE_COMMENT2_COMPILED.match(self.code)
-            remove = False
-            # if newline_re:
-            #     self.update_code_by_match(RE_NEWLINE_COMPILED)
-            #     remove = True
-            if comment1_re:
-                self.update_code_by_match(RE_COMMENT1_COMPILED)
-                remove = True
-            elif comment2_re:
-                self.update_code_by_match(RE_COMMENT2_COMPILED)
-                remove = True
 
 
     def update_code_by_match(self, match):
@@ -237,7 +239,6 @@ class JackTokenizer(object):
         current_code = self.code
         current_code = re.sub(match,"",current_code)
         self.code = " ".join(current_code.split())
-
 
 
     def phrase_to_token(self, phrase):
