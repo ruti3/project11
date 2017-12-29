@@ -88,6 +88,8 @@ class CompilationEngine(object):
         # }
         self.checkSymbol("}")
 
+        # TODO delete SymbolTable
+        self.symbol_tables.pop()
 
 
     def compile_class_var_dec(self, raise_error=True):
@@ -321,7 +323,8 @@ class CompilationEngine(object):
         # subroutine body
         self.tokenizer.advance()
 
-
+        # TODO delete symbolTable
+        self.symbol_tables.pop()
 
 
     def compile_subroutineBody(self):
