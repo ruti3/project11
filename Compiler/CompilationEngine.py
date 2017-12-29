@@ -96,7 +96,7 @@ class CompilationEngine(object):
         """
         HADAR
 
-
+        ט
         Compiles a static declaration or a field
         declaration.
         :return:
